@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import Badge from '../../components/Badge';
 import Spinner from '../../components/Spinner';
@@ -34,6 +34,8 @@ export default function Banners() {
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const imageInputRef = useRef(null);
+  const [imageUploading, setImageUploading] = useState(false);
 
   async function loadBanners() {
     setLoading(true);
@@ -73,7 +75,7 @@ export default function Banners() {
 
   async function handleSave() {
     if (!form.image_url.trim()) {
-      toast.error('Image URL is required.');
+      toast.error('Image URL or upload is required.');
       return;
     }
     setSaving(true);
@@ -98,6 +100,34 @@ export default function Banners() {
       loadBanners();
     }
     setSaving(false);
+  }
+
+  async function handleBannerImageUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be under 5MB.');
+      return;
+    }
+    setImageUploading(true);
+    const ext = file.name.split('.').pop();
+    const path = `banner-${Date.now()}.${ext}`;
+    const { error: upErr } = await supabase.storage
+      .from('banners')
+      .upload(path, file, { upsert: false, contentType: file.type });
+    if (upErr) {
+      toast.error('Image upload failed.');
+      setImageUploading(false);
+      return;
+    }
+    const { data: urlData } = supabase.storage.from('banners').getPublicUrl(path);
+    setForm((f) => ({ ...f, image_url: urlData.publicUrl }));
+    setImageUploading(false);
+    if (imageInputRef.current) imageInputRef.current.value = '';
   }
 
   async function handleDelete() {
@@ -260,13 +290,30 @@ export default function Banners() {
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-[#0e1a12] mb-1.5">Image URL *</label>
-            <input
-              value={form.image_url}
-              onChange={(e) => setForm((f) => ({ ...f, image_url: e.target.value }))}
-              className={inputClass}
-              placeholder="https://…"
-            />
+            <label className="block text-sm font-semibold text-[#0e1a12] mb-1.5">Image *</label>
+            <div className="flex gap-2 mb-2">
+              <input
+                value={form.image_url}
+                onChange={(e) => setForm((f) => ({ ...f, image_url: e.target.value }))}
+                className={`flex-1 ${inputClass}`}
+                placeholder="https://… or upload below"
+              />
+              <button
+                type="button"
+                onClick={() => imageInputRef.current?.click()}
+                disabled={imageUploading}
+                className="shrink-0 border border-[#1a5c38] text-[#1a5c38] text-sm font-semibold px-3 py-2 rounded-lg hover:bg-[#1a5c38] hover:text-white transition-colors disabled:opacity-60"
+              >
+                {imageUploading ? '…' : 'Upload'}
+              </button>
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleBannerImageUpload}
+              />
+            </div>
             {form.image_url && (
               <img
                 src={form.image_url}

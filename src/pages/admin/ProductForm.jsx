@@ -1,12 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { supabase } from '../../lib/supabase';
 import Button from '../../components/Button';
-import Spinner from '../../components/Spinner';
 import { useToast } from '../../components/Toast';
 
-const CATEGORIES = ['panjabi', 'shirts', 't-shirts', 'bottoms'];
+const CATEGORIES = ['panjabi', 'shirts', 't-shirts', 'bottoms', 'accessories'];
 
 function ArrayField({ label, fields, append, remove, register, fieldKey, placeholder }) {
   return (
@@ -49,12 +48,16 @@ export default function ProductForm() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const isEdit = Boolean(id);
+  const imageInputRef = useRef(null);
+  const [imageUploading, setImageUploading] = useState(false);
 
   const {
     register,
     handleSubmit,
     reset,
     control,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
@@ -63,13 +66,14 @@ export default function ProductForm() {
       description: '',
       price: '',
       sale_price: '',
+      stock: '',
       category: '',
       tags: [],
       colors: [],
       sizes: [],
       images: [],
       is_active: true,
-      featured: false,
+      is_featured: false,
     },
   });
 
@@ -97,13 +101,14 @@ export default function ProductForm() {
         description: data.description ?? '',
         price: data.price ?? '',
         sale_price: data.sale_price ?? '',
+        stock: data.stock ?? '',
         category: data.category ?? '',
         tags: (data.tags ?? []).map((v) => ({ value: v })),
         colors: (data.colors ?? []).map((v) => ({ value: v })),
         sizes: (data.sizes ?? []).map((v) => ({ value: v })),
         images: (data.images ?? []).map((v) => ({ value: v })),
         is_active: data.is_active ?? true,
-        featured: data.featured ?? false,
+        is_featured: data.is_featured ?? false,
       });
     }
     loadProduct();
@@ -124,13 +129,14 @@ export default function ProductForm() {
       description: values.description.trim() || null,
       price: Number(values.price),
       sale_price: values.sale_price ? Number(values.sale_price) : null,
+      stock: values.stock !== '' ? Number(values.stock) : 0,
       category: values.category || null,
       tags: values.tags.map((t) => t.value).filter(Boolean),
       colors: values.colors.map((c) => c.value).filter(Boolean),
       sizes: values.sizes.map((s) => s.value).filter(Boolean),
       images: values.images.map((i) => i.value).filter(Boolean),
       is_active: values.is_active,
-      featured: values.featured,
+      is_featured: values.is_featured,
     };
 
     if (isEdit) {
@@ -149,6 +155,35 @@ export default function ProductForm() {
       toast.success('Product created successfully.');
     }
     navigate('/admin/products');
+  }
+
+  async function handleImageUpload(e) {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
+    const invalid = files.find((f) => !f.type.startsWith('image/') || f.size > 5 * 1024 * 1024);
+    if (invalid) {
+      toast.error('Images must be image files under 5MB each.');
+      return;
+    }
+    setImageUploading(true);
+    const currentImages = watch('images') ?? [];
+    const newImages = [...currentImages];
+    for (const file of files) {
+      const ext = file.name.split('.').pop();
+      const path = `product-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from('products')
+        .upload(path, file, { upsert: false, contentType: file.type });
+      if (upErr) {
+        toast.error(`Failed to upload ${file.name}.`);
+        continue;
+      }
+      const { data: urlData } = supabase.storage.from('products').getPublicUrl(path);
+      newImages.push({ value: urlData.publicUrl });
+    }
+    setValue('images', newImages, { shouldDirty: true });
+    setImageUploading(false);
+    if (imageInputRef.current) imageInputRef.current.value = '';
   }
 
   const inputClass =
@@ -245,6 +280,23 @@ export default function ProductForm() {
 
           <div>
             <label className="block text-sm font-semibold text-[#0e1a12] mb-1.5">
+              Stock Quantity *
+            </label>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              {...register('stock', { required: 'Stock is required', min: { value: 0, message: 'Stock cannot be negative' } })}
+              className={inputClass}
+              placeholder="0"
+            />
+            {errors.stock && (
+              <p className="text-xs text-red-500 mt-1">{errors.stock.message}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-[#0e1a12] mb-1.5">
               Category
             </label>
             <select {...register('category')} className={inputClass}>
@@ -290,8 +342,70 @@ export default function ProductForm() {
 
         <div className="bg-white rounded-2xl shadow-sm p-6 space-y-5">
           <h2 className="font-semibold text-[#0e1a12]">Images</h2>
+
+          {/* Upload button */}
+          <div>
+            <button
+              type="button"
+              onClick={() => imageInputRef.current?.click()}
+              disabled={imageUploading}
+              className="flex items-center gap-2 border-2 border-dashed border-[#1a5c38]/30 rounded-xl px-4 py-3 text-sm text-[#1a5c38] font-medium hover:border-[#1a5c38] hover:bg-[#1a5c38]/5 transition-all disabled:opacity-60 w-full justify-center"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              {imageUploading ? 'Uploading…' : 'Upload Images'}
+            </button>
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handleImageUpload}
+            />
+            <p className="text-xs text-[#0e1a12]/40 mt-1.5">Upload images to Supabase Storage (max 5MB each). First image is the primary.</p>
+          </div>
+
+          {/* Image previews + URL list */}
+          {imagesField.fields.length > 0 && (
+            <div className="grid grid-cols-3 gap-3">
+              {imagesField.fields.map((field, idx) => {
+                const url = watch(`images.${idx}.value`);
+                return (
+                  <div key={field.id} className="relative group">
+                    <div className="aspect-square rounded-lg overflow-hidden bg-gray-100 border border-[#0e1a12]/10">
+                      {url ? (
+                        <img src={url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[#0e1a12]/20">
+                          <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01" />
+                          </svg>
+                        </div>
+                      )}
+                      {idx === 0 && (
+                        <span className="absolute top-1 left-1 bg-[#1a5c38] text-white text-xs px-1.5 py-0.5 rounded font-medium">Primary</span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => imagesField.remove(idx)}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      aria-label="Remove image"
+                    >
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
           <ArrayField
-            label="Image URLs"
+            label="Or paste Image URLs"
             fields={imagesField.fields}
             append={imagesField.append}
             remove={imagesField.remove}
@@ -314,7 +428,7 @@ export default function ProductForm() {
           <label className="flex items-center gap-3 cursor-pointer">
             <input
               type="checkbox"
-              {...register('featured')}
+              {...register('is_featured')}
               className="w-4 h-4 accent-[#1a5c38]"
             />
             <span className="text-sm font-medium text-[#0e1a12]">Featured product</span>

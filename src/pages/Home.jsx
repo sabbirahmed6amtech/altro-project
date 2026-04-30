@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { supabase } from '../lib/supabase';
 import Navbar from '../store/Navbar';
 import CartDrawer from '../store/CartDrawer';
 import HeroBanner from '../store/HeroBanner';
@@ -67,6 +68,9 @@ export default function Home() {
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('All');
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterLoading, setNewsletterLoading] = useState(false);
+  const [newsletterDone, setNewsletterDone] = useState(false);
 
   const { banners: heroSlides } = useBanners('hero_slide');
   const { banners: promobanners } = useBanners('promo_banner');
@@ -80,6 +84,18 @@ export default function Home() {
   });
 
   const saleBanner = saleBanners?.[0] ?? null;
+
+  async function handleNewsletterSubmit(e) {
+    e.preventDefault();
+    if (!newsletterEmail.trim()) return;
+    setNewsletterLoading(true);
+    await supabase
+      .from('subscribers')
+      .upsert([{ email: newsletterEmail.trim().toLowerCase() }], { onConflict: 'email', ignoreDuplicates: true });
+    setNewsletterLoading(false);
+    setNewsletterDone(true);
+    setNewsletterEmail('');
+  }
 
   return (
     <div className="min-h-screen bg-[#f5f2eb]">
@@ -343,16 +359,29 @@ export default function Home() {
           <p className="text-[#0e1a12]/60 text-sm mb-6">
             Subscribe to get the latest arrivals, offers and style tips.
           </p>
-          <div className="flex gap-2 max-w-sm mx-auto">
-            <input
-              type="email"
-              placeholder="your@email.com"
-              className="flex-1 border border-[#1a5c38]/20 rounded-full px-4 py-2.5 text-sm focus:outline-none focus:border-[#1a5c38] bg-white"
-            />
-            <button className="bg-[#1a5c38] text-white font-semibold px-5 py-2.5 rounded-full text-sm hover:bg-[#2a7d50] transition-colors shrink-0">
-              Subscribe
-            </button>
-          </div>
+          {newsletterDone ? (
+            <p className="text-[#1a5c38] font-semibold text-sm">
+              ✓ Thank you for subscribing!
+            </p>
+          ) : (
+            <form onSubmit={handleNewsletterSubmit} className="flex gap-2 max-w-sm mx-auto">
+              <input
+                type="email"
+                required
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                placeholder="your@email.com"
+                className="flex-1 border border-[#1a5c38]/20 rounded-full px-4 py-2.5 text-sm focus:outline-none focus:border-[#1a5c38] bg-white"
+              />
+              <button
+                type="submit"
+                disabled={newsletterLoading}
+                className="bg-[#1a5c38] text-white font-semibold px-5 py-2.5 rounded-full text-sm hover:bg-[#2a7d50] transition-colors shrink-0 disabled:opacity-60"
+              >
+                {newsletterLoading ? '…' : 'Subscribe'}
+              </button>
+            </form>
+          )}
         </div>
       </section>
 
