@@ -140,7 +140,23 @@ export default function Coupons() {
                 {coupons.map((coupon) => (
                   <tr key={coupon.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 font-bold text-[#1a5c38] font-mono tracking-wide">
-                      {coupon.code}
+                      <div className="flex items-center gap-2">
+                        <span>{coupon.code}</span>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(coupon.code)
+                              .then(() => toast.success('Coupon code copied!'))
+                              .catch(() => toast.error('Could not copy to clipboard.'));
+                          }}
+                          title="Copy code"
+                          className="text-[#0e1a12]/30 hover:text-[#1a5c38] transition-colors"
+                          aria-label="Copy coupon code"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2v0a2 2 0 01-2 2H10a2 2 0 01-2-2v0z" />
+                          </svg>
+                        </button>
+                      </div>
                     </td>
                     <td className="px-6 py-4 font-semibold">
                       {coupon.discount_type === 'percent'
