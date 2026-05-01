@@ -185,7 +185,7 @@ export default function Home() {
         `}</style>
       </div>
 
-      {/* ── USP Strip — moved up, tighter & more refined ── */}
+      {/* ── USP Strip ── */}
       <section className="bg-white border-b border-[#1a5c38]/8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-[#1a5c38]/8">
@@ -215,7 +215,7 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {promobanners.slice(0, 3).map((banner, idx) => (
-              <a
+              
                 key={banner.id ?? idx}
                 href={banner.cta_url ?? '#'}
                 className="relative block rounded-xl overflow-hidden group"
@@ -230,7 +230,6 @@ export default function Home() {
                 ) : (
                   <div className="w-full h-full bg-[#1a5c38]" />
                 )}
-                {/* Gradient overlay — bottom-weighted, more cinematic */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-5">
                   {banner.title && (
@@ -251,63 +250,64 @@ export default function Home() {
         </section>
       )}
 
-{/* ── Category Carousel ── */}
-{categoryBanners.length > 0 && (
-  <section className="pt-12 pb-4" id="categories">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="flex items-center gap-4 mb-6">
-        <h2 className="text-xs font-semibold tracking-[0.18em] uppercase text-[#1a5c38] shrink-0">
-          Shop by Category
-        </h2>
-        <span className="h-px flex-1 bg-[#1a5c38]/10" />
-      </div>
-
-      {/* Scrollable row on mobile, grid on desktop */}
-      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide md:grid md:grid-cols-4 lg:grid-cols-5 md:overflow-visible">
-        {categoryBanners.map((cat, idx) => (
-          
-            key={cat.id ?? idx}
-            href="/#products"
-            className="group relative flex-shrink-0 w-36 md:w-auto rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300"
-            style={{ aspectRatio: '3/4' }}
-          >
-            {/* Background image or fallback */}
-            {cat.image_url ? (
-              <img
-                src={cat.image_url}
-                alt={cat.title ?? ''}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-            ) : (
-              <div className="absolute inset-0 bg-[#1a5c38]/15 flex items-center justify-center text-4xl">
-                👕
-              </div>
-            )}
-
-            {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0e1a12]/80 via-[#0e1a12]/20 to-transparent transition-opacity duration-300 group-hover:opacity-90" />
-
-            {/* Label */}
-            <div className="absolute bottom-0 left-0 right-0 p-3.5">
-              <span className="block text-white font-bold text-sm leading-tight tracking-wide">
-                {cat.title}
-              </span>
-              <span className="inline-flex items-center gap-1 text-[#c9f230] text-[10px] font-semibold mt-1 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-300">
-                Shop now
-                <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </span>
+      {/* ── Category Carousel ── */}
+      {categoryBanners.length > 0 && (
+        <section className="pt-12 pb-4" id="categories">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Section header */}
+            <div className="flex items-center gap-4 mb-6">
+              <h2 className="text-xs font-semibold tracking-[0.18em] uppercase text-[#1a5c38] shrink-0">
+                Shop by Category
+              </h2>
+              <span className="h-px flex-1 bg-[#1a5c38]/10" />
             </div>
 
-            {/* Hover border accent */}
-            <div className="absolute inset-0 rounded-2xl ring-2 ring-transparent group-hover:ring-[#c9f230]/60 transition-all duration-300" />
-          </a>
-        ))}
-      </div>
-    </div>
-  </section>
-)}
+            {/* Mobile: horizontal scroll / Desktop: grid */}
+            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide md:grid md:grid-cols-4 lg:grid-cols-5 md:overflow-visible">
+              {categoryBanners.map((cat, idx) => (
+                
+                  key={cat.id ?? idx}
+                  href="/#products"
+                  className="group relative flex-shrink-0 w-36 md:w-auto rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
+                  style={{ aspectRatio: '3/4' }}
+                >
+                  {/* Background image or emoji fallback */}
+                  {cat.image_url ? (
+                    <img
+                      src={cat.image_url}
+                      alt={cat.title ?? ''}
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-[#1a5c38]/15 flex items-center justify-center text-4xl">
+                      👕
+                    </div>
+                  )}
+
+                  {/* Gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0e1a12]/80 via-[#0e1a12]/20 to-transparent transition-opacity duration-300 group-hover:opacity-95" />
+
+                  {/* Label */}
+                  <div className="absolute bottom-0 left-0 right-0 p-3.5">
+                    <span className="block text-white font-bold text-sm leading-tight tracking-wide">
+                      {cat.title}
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[#c9f230] text-[10px] font-semibold mt-1 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-300">
+                      Shop now
+                      <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </span>
+                  </div>
+
+                  {/* Hover border accent */}
+                  <div className="absolute inset-0 rounded-2xl ring-2 ring-transparent group-hover:ring-[#c9f230]/60 transition-all duration-300" />
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── Products Section ── */}
       <section id="products" className="py-10">
@@ -392,7 +392,7 @@ export default function Home() {
       <section className="py-8 px-4">
         <div className="max-w-7xl mx-auto">
           {saleBanner ? (
-            <a
+            
               href={saleBanner.cta_url ?? '#'}
               className="relative block rounded-2xl overflow-hidden group"
               style={{ aspectRatio: '21/7' }}
@@ -419,13 +419,9 @@ export default function Home() {
               </div>
             </a>
           ) : (
-            <div
-              className="relative bg-[#1a5c38] rounded-2xl overflow-hidden flex flex-col md:flex-row items-center justify-between p-8 md:px-14 md:py-12 gap-6"
-            >
-              {/* Decorative circle */}
+            <div className="relative bg-[#1a5c38] rounded-2xl overflow-hidden flex flex-col md:flex-row items-center justify-between p-8 md:px-14 md:py-12 gap-6">
               <div className="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-white/5 pointer-events-none" />
               <div className="absolute right-24 -bottom-10 w-40 h-40 rounded-full bg-[#c9f230]/10 pointer-events-none" />
-
               <div className="relative z-10">
                 <p className="text-[#c9f230] text-xs font-bold tracking-[0.2em] uppercase mb-2">Limited Time</p>
                 <h3 className="text-white text-3xl md:text-4xl font-bold leading-tight">
@@ -433,7 +429,7 @@ export default function Home() {
                 </h3>
                 <p className="text-white/60 text-sm mt-2">Up to 50% off on selected items</p>
               </div>
-              <a
+              
                 href="#products"
                 className="relative z-10 shrink-0 bg-[#c9f230] text-[#0e1a12] font-bold px-7 py-3 rounded-full text-sm inline-flex items-center gap-2 hover:bg-lime-300 transition-colors"
               >
