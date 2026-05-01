@@ -91,9 +91,25 @@ export default function Home() {
     if (!newsletterEmail.trim()) return;
     setNewsletterLoading(true);
     setNewsletterError(false);
+    const email = newsletterEmail.trim().toLowerCase();
+
+    // Check if already subscribed to show a tailored message
+    const { data: existing } = await supabase
+      .from('subscribers')
+      .select('email')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (existing) {
+      setNewsletterLoading(false);
+      setNewsletterDone(true);
+      setNewsletterEmail('');
+      return;
+    }
+
     const { error } = await supabase
       .from('subscribers')
-      .upsert([{ email: newsletterEmail.trim().toLowerCase() }], { onConflict: 'email', ignoreDuplicates: true });
+      .insert([{ email }]);
     setNewsletterLoading(false);
     if (error) {
       setNewsletterError(true);

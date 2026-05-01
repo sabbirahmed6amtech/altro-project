@@ -144,8 +144,9 @@ export default function Coupons() {
                         <span>{coupon.code}</span>
                         <button
                           onClick={() => {
-                            navigator.clipboard.writeText(coupon.code);
-                            toast.success('Coupon code copied!');
+                            navigator.clipboard.writeText(coupon.code)
+                              .then(() => toast.success('Coupon code copied!'))
+                              .catch(() => toast.error('Could not copy to clipboard.'));
                           }}
                           title="Copy code"
                           className="text-[#0e1a12]/30 hover:text-[#1a5c38] transition-colors"

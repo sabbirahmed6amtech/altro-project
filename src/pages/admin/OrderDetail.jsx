@@ -67,12 +67,14 @@ export default function OrderDetail() {
     fetchOrder();
   }, [id, navigate, toast]);
 
-  /** Returns allowed forward statuses + cancelled */
+  /** Returns allowed forward statuses + cancelled. Unrecognized statuses only allow cancellation. */
   function getAllowedStatuses(currentStatus) {
     const currentIdx = STATUS_ORDER.indexOf(currentStatus);
-    const forward = currentIdx >= 0
-      ? STATUS_ORDER.slice(currentIdx)
-      : STATUS_ORDER;
+    if (currentIdx < 0) {
+      // Unrecognized status — only allow cancellation
+      return ORDER_STATUSES.filter((s) => s.value === currentStatus || s.value === 'cancelled');
+    }
+    const forward = STATUS_ORDER.slice(currentIdx);
     const allowed = new Set(forward);
     allowed.add('cancelled');
     return ORDER_STATUSES.filter((s) => allowed.has(s.value));
