@@ -113,8 +113,10 @@ export default function Banners() {
       toast.error('Image must be under 5MB.');
       return;
     }
+    const ALLOWED_EXTS = new Set(['jpg', 'jpeg', 'png', 'webp', 'avif']);
+    const rawExt = file.name.split('.').pop()?.toLowerCase() ?? '';
+    const ext = ALLOWED_EXTS.has(rawExt) ? rawExt : 'jpg';
     setImageUploading(true);
-    const ext = file.name.split('.').pop();
     const path = `banner-${Date.now()}.${ext}`;
     const { error: upErr } = await supabase.storage
       .from('banners')

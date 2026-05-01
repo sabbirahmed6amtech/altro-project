@@ -105,8 +105,10 @@ export default function Settings() {
       toast.error('Image must be under 5MB.');
       return;
     }
+    const ALLOWED_EXTS = new Set(['jpg', 'jpeg', 'png', 'webp', 'svg', 'avif']);
+    const rawExt = file.name.split('.').pop()?.toLowerCase() ?? '';
+    const ext = ALLOWED_EXTS.has(rawExt) ? rawExt : 'jpg';
     setLogoUploading(true);
-    const ext = file.name.split('.').pop();
     const path = `logo-${Date.now()}.${ext}`;
     const { error: upErr } = await supabase.storage
       .from('settings')

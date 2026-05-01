@@ -187,7 +187,13 @@ export default function Dashboard() {
         // Category breakdown
         const catMap = {};
         allOrders.forEach((o) => {
-          const items = typeof o.items === 'string' ? JSON.parse(o.items) : o.items ?? [];
+          let items;
+          try {
+            items = typeof o.items === 'string' ? JSON.parse(o.items) : o.items ?? [];
+          } catch {
+            items = [];
+          }
+          if (!Array.isArray(items)) items = [];
           items.forEach((item) => {
             const cat = item.category || 'other';
             catMap[cat] = (catMap[cat] || 0) + 1;
@@ -251,6 +257,7 @@ export default function Dashboard() {
     {
       label: 'Pending Orders',
       value: stats.pending.toLocaleString(),
+      // Invert sign: fewer pending orders is an improvement (positive trend)
       change: changes.pending !== undefined ? -changes.pending : undefined,
       color: 'bg-yellow-50',
       icon: (
