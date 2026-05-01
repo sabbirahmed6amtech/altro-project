@@ -36,7 +36,7 @@ export default function Products() {
 
   function handleSearch(e) {
     e.preventDefault();
-    setSearch(searchInput);
+    setSearchTerm(searchInput);
     loadAll(searchInput);
   }
 
@@ -49,11 +49,7 @@ export default function Products() {
       toast.error('Failed to update product.');
     } else {
       toast.success(`Product ${product.is_active ? 'deactivated' : 'activated'}.`);
-      loadAll(search);
-    }
-  }
-
-  async function handleDelete() {
+      loadAll(searchTerm);
     if (!deleteTarget) return;
     setDeleteLoading(true);
     const { error } = await supabase.from('products').delete().eq('id', deleteTarget.id);
@@ -62,12 +58,10 @@ export default function Products() {
     } else {
       toast.success('Product deleted.');
       setDeleteTarget(null);
-      loadAll(search);
-    }
-    setDeleteLoading(false);
+      loadAll(searchTerm);
   }
 
-  const isLoading = allLoading;
+  const isLoading = loading;
 
   return (
     <div className="p-4 lg:p-6 space-y-4">
@@ -103,7 +97,7 @@ export default function Products() {
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100">
           <h2 className="font-semibold text-[#0e1a12]">
-            {displayProducts.length} product{displayProducts.length !== 1 ? 's' : ''}
+            {products.length} product{products.length !== 1 ? 's' : ''}
           </h2>
         </div>
 
@@ -111,7 +105,7 @@ export default function Products() {
           <div className="flex items-center justify-center h-48">
             <Spinner size="lg" />
           </div>
-        ) : displayProducts.length === 0 ? (
+        ) : products.length === 0 ? (
           <div className="text-center py-16 text-[#0e1a12]/40">
             <p className="font-medium">No products found</p>
             <button
@@ -134,7 +128,7 @@ export default function Products() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {displayProducts.map((product) => (
+                {products.map((product) => (
                   <tr key={product.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
