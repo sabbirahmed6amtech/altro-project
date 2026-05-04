@@ -31,8 +31,11 @@ export default function Navbar({ onCartClick }) {
   }, [location.pathname]);
 
   const isActive = (to) => {
-    if (to === '/') return location.pathname === '/';
-    if (to.includes('#')) return location.pathname === '/';
+    if (to.includes('#')) {
+      const [path, hash] = to.split('#');
+      return location.pathname === (path || '/') && location.hash === `#${hash}`;
+    }
+    if (to === '/') return location.pathname === '/' && !location.hash;
     return location.pathname.startsWith(to);
   };
 

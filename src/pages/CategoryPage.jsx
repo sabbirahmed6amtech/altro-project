@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import Navbar from '../store/Navbar';
@@ -28,6 +28,10 @@ export default function CategoryPage() {
   const { slug } = useParams();
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [slug]);
 
   const { banners: categoryBanners } = useBanners('category_banner');
   const matchingBanner = categoryBanners.find((b) => normalize(b.title) === slug);

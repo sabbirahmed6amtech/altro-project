@@ -30,6 +30,23 @@ export default function ProductDetail() {
   const [mainImageIdx, setMainImageIdx] = useState(0);
   const [addingToCart, setAddingToCart] = useState(false);
   const [descOpen, setDescOpen] = useState(true);
+  const [zoomOpen, setZoomOpen] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [slug]);
+
+  useEffect(() => {
+    if (!zoomOpen) return;
+    const len = product?.images?.length ?? 0;
+    const handleKey = (e) => {
+      if (e.key === 'Escape') setZoomOpen(false);
+      if (e.key === 'ArrowLeft' && len > 1) setMainImageIdx((i) => (i - 1 + len) % len);
+      if (e.key === 'ArrowRight' && len > 1) setMainImageIdx((i) => (i + 1) % len);
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [zoomOpen, product?.images?.length]);
 
   useEffect(() => {
     if (!slug) return;
@@ -147,7 +164,10 @@ export default function ProductDetail() {
             {/* Left: Images */}
             <div className="space-y-3">
               {/* Main Image */}
-              <div className="aspect-square rounded-2xl overflow-hidden bg-[#1a5c38]/10 relative">
+              <div
+                className={`aspect-square rounded-2xl overflow-hidden bg-[#1a5c38]/10 relative ${images.length > 0 ? 'cursor-zoom-in' : ''}`}
+                onClick={() => images.length > 0 && setZoomOpen(true)}
+              >
                 {images.length > 0 ? (
                   <img
                     key={mainImageIdx}
@@ -162,7 +182,71 @@ export default function ProductDetail() {
                     </svg>
                   </div>
                 )}
+                {images.length > 0 && (
+                  <div className="absolute bottom-2 right-2 bg-black/30 rounded-full p-1.5 pointer-events-none">
+                    <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                    </svg>
+                  </div>
+                )}
               </div>
+
+              {/* Image Zoom Lightbox */}
+              {zoomOpen && images.length > 0 && (
+                <div
+                  className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+                  onClick={() => setZoomOpen(false)}
+                >
+                  <button
+                    onClick={() => setZoomOpen(false)}
+                    className="absolute top-4 right-4 p-2 text-white/60 hover:text-white transition-colors z-10"
+                    aria-label="Close zoom"
+                  >
+                    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+
+                  <img
+                    src={images[mainImageIdx]}
+                    alt={product.name}
+                    className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg shadow-2xl"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+
+                  {images.length > 1 && (
+                    <>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setMainImageIdx((i) => (i - 1 + images.length) % images.length); }}
+                        className="absolute left-4 p-2 text-white/60 hover:text-white transition-colors"
+                        aria-label="Previous image"
+                      >
+                        <svg className="w-9 h-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setMainImageIdx((i) => (i + 1) % images.length); }}
+                        className="absolute right-4 p-2 text-white/60 hover:text-white transition-colors"
+                        aria-label="Next image"
+                      >
+                        <svg className="w-9 h-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
+                        {images.map((_, idx) => (
+                          <button
+                            key={idx}
+                            onClick={(e) => { e.stopPropagation(); setMainImageIdx(idx); }}
+                            className={`w-2 h-2 rounded-full transition-all ${idx === mainImageIdx ? 'bg-white scale-125' : 'bg-white/40'}`}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
 
               {/* Thumbnail Strip */}
               {images.length > 1 && (
