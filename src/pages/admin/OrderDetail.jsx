@@ -22,6 +22,7 @@ const PAYMENT_LABELS = {
   bkash: 'bKash',
   nagad: 'Nagad',
   rocket: 'Rocket',
+  bank: 'Bank Transfer',
   cod: 'Cash on Delivery',
 };
 
@@ -240,8 +241,14 @@ export default function OrderDetail() {
               label="Method"
               value={PAYMENT_LABELS[order.payment_method] ?? order.payment_method}
             />
-            <InfoRow label="Sender Number" value={order.payment_sender_number} />
-            <InfoRow label="Transaction ID" value={order.payment_trx_id} />
+            <InfoRow
+              label={order.payment_method === 'bank' ? 'Depositor Name' : 'Sender Number'}
+              value={order.payment_sender_number}
+            />
+            <InfoRow
+              label={order.payment_method === 'bank' ? 'Transaction Ref.' : 'Transaction ID'}
+              value={order.payment_trx_id}
+            />
             <InfoRow label="Note" value={order.payment_note} />
           </div>
 
