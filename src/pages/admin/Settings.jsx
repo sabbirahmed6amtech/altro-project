@@ -68,6 +68,47 @@ function PaymentMethodSection({ method, label, values, onChange }) {
   );
 }
 
+function BankPaymentSection({ values, onChange }) {
+  const enabled = values['bank_enabled'] === 'true' || values['bank_enabled'] === true;
+  return (
+    <div className="border border-[#0e1a12]/10 rounded-xl p-4 space-y-3">
+      <ToggleField label="Bank Transfer" settingKey="bank_enabled" values={values} onChange={onChange} />
+      {enabled && (
+        <>
+          <TextField
+            label="Account Holder Name"
+            settingKey="bank_account_holder"
+            values={values}
+            onChange={onChange}
+            placeholder="Full name of account holder"
+          />
+          <TextField
+            label="Bank Name"
+            settingKey="bank_name"
+            values={values}
+            onChange={onChange}
+            placeholder="e.g. Dutch-Bangla Bank Limited"
+          />
+          <TextField
+            label="Account Number"
+            settingKey="bank_account_number"
+            values={values}
+            onChange={onChange}
+            placeholder="e.g. 1231234567890"
+          />
+          <TextField
+            label="Branch Name (optional)"
+            settingKey="bank_branch"
+            values={values}
+            onChange={onChange}
+            placeholder="e.g. Dhaka Main Branch"
+          />
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function Settings() {
   const { toast } = useToast();
   const fetchSettings = useSettingsStore((s) => s.fetchSettings);
@@ -228,6 +269,7 @@ export default function Settings() {
           <PaymentMethodSection method="bkash" label="bKash" values={values} onChange={handleChange} />
           <PaymentMethodSection method="nagad" label="Nagad" values={values} onChange={handleChange} />
           <PaymentMethodSection method="rocket" label="Rocket" values={values} onChange={handleChange} />
+          <BankPaymentSection values={values} onChange={handleChange} />
           <div className="border border-[#0e1a12]/10 rounded-xl p-4">
             <ToggleField label="Cash on Delivery (COD)" settingKey="cod_enabled" values={values} onChange={handleChange} />
           </div>

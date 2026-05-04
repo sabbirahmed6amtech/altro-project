@@ -9,6 +9,10 @@ import { supabase } from '../lib/supabase';
 import { formatCurrency } from '../utils/formatCurrency';
 import { generateOrderNumber } from '../utils/generateOrderNumber';
 import { InvoiceDownloadButton } from '../lib/Invoice';
+import bkashLogo from '../assets/bkash.png';
+import nagadLogo from '../assets/nagad.png';
+import rocketLogo from '../assets/rocket.png';
+import bankLogo from '../assets/bank.png';
 
 // ─── Schemas ────────────────────────────────────────────────────────────────
 
@@ -21,13 +25,21 @@ const customerSchema = z.object({
 });
 
 const paymentSchema = z.object({
-  paymentMethod: z.enum(['bkash', 'nagad', 'rocket', 'cod'], {
+  paymentMethod: z.enum(['bkash', 'nagad', 'rocket', 'bank', 'cod'], {
     required_error: 'Select a payment method',
   }),
   senderNumber: z.string().optional(),
   trxId: z.string().optional(),
   paymentNote: z.string().optional(),
 });
+
+const PAYMENT_LABELS = {
+  bkash: 'bKash',
+  nagad: 'Nagad',
+  rocket: 'Rocket',
+  bank: 'Bank Transfer',
+  cod: 'Cash on Delivery',
+};
 
 // ─── Step Indicator ─────────────────────────────────────────────────────────
 
@@ -116,14 +128,20 @@ export default function CheckoutModal({ isOpen, onClose }) {
   const deliveryFee = getDeliveryFee(customerData?.district ?? district);
   const total = subtotal - couponDiscount + deliveryFee;
 
-  // Payment method settings
-  const bkashEnabled = getSetting('bkash_enabled', true);
-  const nagadEnabled = getSetting('nagad_enabled', true);
-  const rocketEnabled = getSetting('rocket_enabled', false);
-  const codEnabled = getSetting('cod_enabled', true);
+  // Payment method settings — DB stores booleans as strings, coerce explicitly
+  const toBool = (val, def) => (val === null || val === undefined) ? def : val === true || val === 'true';
+  const bkashEnabled = toBool(getSetting('bkash_enabled'), true);
+  const nagadEnabled = toBool(getSetting('nagad_enabled'), true);
+  const rocketEnabled = toBool(getSetting('rocket_enabled'), false);
+  const bankEnabled = toBool(getSetting('bank_enabled'), false);
+  const codEnabled = toBool(getSetting('cod_enabled'), true);
   const bkashNumber = getSetting('bkash_number', '01XXXXXXXXX');
   const nagadNumber = getSetting('nagad_number', '01XXXXXXXXX');
   const rocketNumber = getSetting('rocket_number', '01XXXXXXXXX');
+  const bankAccountHolder = getSetting('bank_account_holder', '');
+  const bankAccountName = getSetting('bank_name', '');
+  const bankAccountNumber = getSetting('bank_account_number', '');
+  const bankBranch = getSetting('bank_branch', '');
 
   // Reset when closed
   useEffect(() => {
@@ -252,13 +270,15 @@ export default function CheckoutModal({ isOpen, onClose }) {
   };
 
   const paymentMethods = [
-    { key: 'bkash', label: 'bKash', enabled: bkashEnabled, number: bkashNumber, color: 'bg-pink-500' },
-    { key: 'nagad', label: 'Nagad', enabled: nagadEnabled, number: nagadNumber, color: 'bg-orange-500' },
-    { key: 'rocket', label: 'Rocket', enabled: rocketEnabled, number: rocketNumber, color: 'bg-purple-600' },
+    { key: 'bkash', label: 'bKash', enabled: bkashEnabled, number: bkashNumber, logo: bkashLogo },
+    { key: 'nagad', label: 'Nagad', enabled: nagadEnabled, number: nagadNumber, logo: nagadLogo },
+    { key: 'rocket', label: 'Rocket', enabled: rocketEnabled, number: rocketNumber, logo: rocketLogo },
+    { key: 'bank', label: 'Bank Transfer', enabled: bankEnabled, number: null, logo: bankLogo },
     { key: 'cod', label: 'Cash on Delivery', enabled: codEnabled, number: null, color: 'bg-[#1a5c38]' },
   ].filter((m) => m.enabled);
 
   const isMobileBanking = (method) => ['bkash', 'nagad', 'rocket'].includes(method);
+  const isBank = (method) => method === 'bank';
 
   if (!isOpen) return null;
 
@@ -444,11 +464,17 @@ export default function CheckoutModal({ isOpen, onClose }) {
                               {...reg2('paymentMethod')}
                               className="sr-only"
                             />
-                            <span
-                              className={`w-8 h-8 rounded-lg ${method.color} text-white flex items-center justify-center text-xs font-bold shrink-0`}
-                            >
-                              {method.label.slice(0, 1)}
-                            </span>
+                            {method.logo ? (
+                              <img
+                                src={method.logo}
+                                alt={method.label}
+                                className="w-9 h-9 rounded-lg object-contain shrink-0 bg-white p-0.5 border border-[#0e1a12]/8"
+                              />
+                            ) : (
+                              <span className={`w-9 h-9 rounded-lg ${method.color} text-white flex items-center justify-center text-xs font-bold shrink-0`}>
+                                {method.label.slice(0, 1)}
+                              </span>
+                            )}
                             <div>
                               <p className="text-sm font-semibold text-[#0e1a12]">{method.label}</p>
                               {method.number && (
@@ -496,6 +522,68 @@ export default function CheckoutModal({ isOpen, onClose }) {
                         <input
                           {...reg2('trxId')}
                           placeholder="e.g. AB1234XXXX"
+                          className="w-full border border-[#1a5c38]/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a5c38] bg-[#f5f2eb]"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Bank Transfer instructions */}
+                  {selectedMethod && isBank(selectedMethod) && (
+                    <div className="bg-white rounded-xl p-4 shadow-sm space-y-3 border border-[#1a5c38]/10">
+                      {(bankAccountHolder || bankAccountName || bankAccountNumber || bankBranch) && (
+                        <div className="bg-[#f5f2eb] rounded-lg p-3 space-y-1.5">
+                          <p className="text-[10px] font-bold text-[#1a5c38] uppercase tracking-wider mb-2">
+                            Transfer to this account:
+                          </p>
+                          {bankAccountHolder && (
+                            <div className="flex justify-between text-sm">
+                              <span className="text-[#0e1a12]/55">Account Holder</span>
+                              <span className="font-semibold text-[#0e1a12]">{bankAccountHolder}</span>
+                            </div>
+                          )}
+                          {bankAccountName && (
+                            <div className="flex justify-between text-sm">
+                              <span className="text-[#0e1a12]/55">Bank</span>
+                              <span className="font-semibold text-[#0e1a12]">{bankAccountName}</span>
+                            </div>
+                          )}
+                          {bankAccountNumber && (
+                            <div className="flex justify-between text-sm">
+                              <span className="text-[#0e1a12]/55">Account No.</span>
+                              <span className="font-mono font-semibold text-[#0e1a12]">{bankAccountNumber}</span>
+                            </div>
+                          )}
+                          {bankBranch && (
+                            <div className="flex justify-between text-sm">
+                              <span className="text-[#0e1a12]/55">Branch</span>
+                              <span className="font-semibold text-[#0e1a12]">{bankBranch}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      <p className="text-sm text-[#0e1a12]/70">
+                        Please transfer{' '}
+                        <strong className="text-[#1a5c38]">{formatCurrency(total)}</strong> to the
+                        account above, then enter your deposit details below.
+                      </p>
+                      <div>
+                        <label className="block text-xs font-semibold text-[#0e1a12] mb-1.5">
+                          Depositor Name
+                        </label>
+                        <input
+                          {...reg2('senderNumber')}
+                          placeholder="Name used for the bank transfer"
+                          className="w-full border border-[#1a5c38]/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a5c38] bg-[#f5f2eb]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-[#0e1a12] mb-1.5">
+                          Transaction / Reference No.
+                        </label>
+                        <input
+                          {...reg2('trxId')}
+                          placeholder="e.g. TXN1234567890"
                           className="w-full border border-[#1a5c38]/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a5c38] bg-[#f5f2eb]"
                         />
                       </div>
@@ -605,15 +693,23 @@ export default function CheckoutModal({ isOpen, onClose }) {
                     <div className="space-y-1.5 text-sm">
                       <div className="flex justify-between">
                         <span className="text-[#0e1a12]/60">Method</span>
-                        <span className="font-medium text-[#0e1a12] capitalize">
-                          {paymentData.paymentMethod === 'cod'
-                            ? 'Cash on Delivery'
-                            : paymentData.paymentMethod}
+                        <span className="font-medium text-[#0e1a12]">
+                          {PAYMENT_LABELS[paymentData.paymentMethod] ?? paymentData.paymentMethod}
                         </span>
                       </div>
+                      {paymentData.senderNumber && (
+                        <div className="flex justify-between">
+                          <span className="text-[#0e1a12]/60">
+                            {paymentData.paymentMethod === 'bank' ? 'Depositor Name' : 'Sender No.'}
+                          </span>
+                          <span className="font-medium text-[#0e1a12]">{paymentData.senderNumber}</span>
+                        </div>
+                      )}
                       {paymentData.trxId && (
                         <div className="flex justify-between">
-                          <span className="text-[#0e1a12]/60">TrxID</span>
+                          <span className="text-[#0e1a12]/60">
+                            {paymentData.paymentMethod === 'bank' ? 'Transaction Ref.' : 'TrxID'}
+                          </span>
                           <span className="font-medium text-[#0e1a12]">{paymentData.trxId}</span>
                         </div>
                       )}
