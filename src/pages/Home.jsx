@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '../lib/supabase';
 import Navbar from '../store/Navbar';
@@ -9,8 +10,6 @@ import Footer from '../store/Footer';
 import CheckoutModal from '../store/CheckoutModal';
 import { useProducts } from '../hooks/useProducts';
 import { useBanners } from '../hooks/useBanners';
-
-const CATEGORIES = ['All', 'Panjabi', 'Shirts', 'T-Shirts', 'Bottoms'];
 
 const USP_ITEMS = [
   {
@@ -261,66 +260,41 @@ export default function Home() {
               <span className="h-px flex-1 bg-[#1a5c38]/10" />
             </div>
 
-            {/* Mobile: circular scroll */}
-            <div className="md:hidden flex gap-5 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
-              {categoryBanners.map((cat, idx) => (
-                <a
-                  key={cat.id != null ? cat.id : idx}
-                  href="/#products"
-                  className="group snap-start flex-shrink-0 flex flex-col items-center gap-2.5 w-[76px]"
-                >
-                  <div className="relative w-[76px] h-[76px] rounded-full overflow-hidden ring-2 ring-[#1a5c38]/15 group-hover:ring-[#c9f230] transition-all duration-300 shadow-sm group-hover:shadow-md">
+            {/* Unified: horizontal scroll on mobile, grid on desktop */}
+            <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide snap-x snap-mandatory md:grid md:grid-cols-4 lg:grid-cols-5 md:overflow-visible md:snap-none">
+              {categoryBanners.map((cat, idx) => {
+                const slug = cat.title?.toLowerCase().replace(/\s+/g, '-') ?? '';
+                return (
+                  <Link
+                    key={cat.id != null ? cat.id : idx}
+                    to={`/category/${slug}`}
+                    className="group relative flex-shrink-0 w-36 md:w-auto snap-start rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                    style={{ aspectRatio: '3/4' }}
+                  >
                     {cat.image_url ? (
                       <img
                         src={cat.image_url}
                         alt={cat.title != null ? cat.title : ''}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     ) : (
-                      <div className="w-full h-full bg-[#1a5c38]/10 flex items-center justify-center text-2xl">👕</div>
+                      <div className="absolute inset-0 bg-[#1a5c38]/15" />
                     )}
-                    <div className="absolute inset-0 bg-[#0e1a12]/0 group-hover:bg-[#0e1a12]/15 transition-colors duration-300" />
-                  </div>
-                  <span className="text-[11px] font-semibold text-[#0e1a12] text-center leading-tight group-hover:text-[#1a5c38] transition-colors duration-200">
-                    {cat.title}
-                  </span>
-                </a>
-              ))}
-            </div>
-
-            {/* Desktop: portrait grid */}
-            <div className="hidden md:grid md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {categoryBanners.map((cat, idx) => (
-                <a
-                  key={cat.id != null ? cat.id : idx}
-                  href="/#products"
-                  className="group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-                  style={{ aspectRatio: '3/4' }}
-                >
-                  {cat.image_url ? (
-                    <img
-                      src={cat.image_url}
-                      alt={cat.title != null ? cat.title : ''}
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 bg-[#1a5c38]/15 flex items-center justify-center text-4xl">👕</div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0e1a12]/80 via-[#0e1a12]/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-4">
-                    <span className="block text-white font-bold text-sm leading-tight tracking-wide">
-                      {cat.title}
-                    </span>
-                    <span className="flex items-center gap-1 text-[#c9f230] text-[10px] font-semibold mt-1.5 opacity-0 group-hover:opacity-100 translate-y-1.5 group-hover:translate-y-0 transition-all duration-300">
-                      Shop now
-                      <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                      </svg>
-                    </span>
-                  </div>
-                  <div className="absolute inset-0 rounded-2xl ring-2 ring-transparent group-hover:ring-[#c9f230]/60 transition-all duration-300" />
-                </a>
-              ))}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0e1a12]/70 via-transparent to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-3.5">
+                      <span className="block text-white font-bold text-sm leading-tight tracking-wide">
+                        {cat.title}
+                      </span>
+                      <span className="flex items-center gap-1 text-[#c9f230] text-[11px] font-semibold mt-1 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-300">
+                        Shop now
+                        <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -340,7 +314,7 @@ export default function Home() {
           </div>
 
           <div className="flex gap-2 flex-wrap mb-7">
-            {CATEGORIES.map((cat) => (
+            {['All', ...categoryBanners.map((b) => b.title)].map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveTab(cat)}

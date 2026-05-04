@@ -61,13 +61,12 @@ export default function HeroBanner({ slides = [] }) {
         style={{ aspectRatio: '3/1', minHeight: '200px' }}
       >
         <div className="absolute inset-0 bg-[url('/src/assets/hero.png')] bg-cover bg-center opacity-20" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0e1a12]/80 via-[#0e1a12]/40 to-transparent" />
         <div className="relative z-10 h-full flex items-center px-6 sm:px-10 md:px-16">
           <div>
-            <h1 className="font-display text-2xl sm:text-3xl md:text-5xl text-white font-bold leading-tight mb-2 md:mb-3">
+            <h1 className="font-display text-2xl sm:text-3xl md:text-5xl text-white font-bold leading-tight mb-2 md:mb-3" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.5)' }}>
               ALTRO Clothing
             </h1>
-            <p className="text-sm md:text-lg text-white/70 mb-4 md:mb-6">
+            <p className="text-sm md:text-lg text-white/80 mb-4 md:mb-6" style={{ textShadow: '0 1px 8px rgba(0,0,0,0.4)' }}>
               Quality Attire from Bangladesh
             </p>
             <Link
@@ -115,7 +114,6 @@ export default function HeroBanner({ slides = [] }) {
           ) : (
             <div className="w-full h-full bg-[#1a5c38]" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0e1a12]/80 via-[#0e1a12]/35 to-transparent" />
         </div>
       ))}
 
@@ -123,12 +121,12 @@ export default function HeroBanner({ slides = [] }) {
       <div key={current} className="relative z-20 h-full flex items-center px-6 sm:px-10 md:px-16 lg:px-20">
         <div className="max-w-xs sm:max-w-sm md:max-w-lg">
           {slide.title && (
-            <h1 className="hero-title font-display text-xl sm:text-2xl md:text-4xl lg:text-5xl text-white font-bold leading-tight mb-1.5 md:mb-3">
+            <h1 className="hero-title font-display text-xl sm:text-2xl md:text-4xl lg:text-5xl text-white font-bold leading-tight mb-1.5 md:mb-3" style={{ textShadow: '0 2px 16px rgba(0,0,0,0.55)' }}>
               {slide.title}
             </h1>
           )}
           {slide.subtitle && (
-            <p className="hero-sub text-xs sm:text-sm md:text-lg text-white/75 mb-3 md:mb-6">
+            <p className="hero-sub text-xs sm:text-sm md:text-lg text-white mb-3 md:mb-6" style={{ textShadow: '0 1px 8px rgba(0,0,0,0.45)' }}>
               {slide.subtitle}
             </p>
           )}

@@ -6,6 +6,7 @@ import AdminLayout from './admin/AdminLayout.jsx';
 // Public pages
 const Home = lazy(() => import('./pages/Home.jsx'));
 const ProductDetail = lazy(() => import('./pages/ProductDetail.jsx'));
+const CategoryPage = lazy(() => import('./pages/CategoryPage.jsx'));
 const Track = lazy(() => import('./pages/Track.jsx'));
 const NotFound = lazy(() => import('./pages/NotFound.jsx'));
 
@@ -44,6 +45,7 @@ export default function App() {
         {/* Public routes */}
         <Route path="/" element={<Home />} />
         <Route path="/product/:slug" element={<ProductDetail />} />
+        <Route path="/category/:slug" element={<CategoryPage />} />
         <Route path="/track" element={<Track />} />
 
         {/* Admin auth */}
