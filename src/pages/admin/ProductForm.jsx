@@ -5,8 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { generateUniqueId } from '../../utils/generateUniqueId';
 import Button from '../../components/Button';
 import { useToast } from '../../components/Toast';
-
-const CATEGORIES = ['panjabi', 'shirts', 't-shirts', 'bottoms', 'accessories'];
+import { useBanners } from '../../hooks/useBanners';
 
 function ArrayField({ label, fields, append, remove, register, fieldKey, placeholder }) {
   return (
@@ -56,6 +55,7 @@ export default function ProductForm() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const isEdit = Boolean(id);
+  const { banners: categoryBanners } = useBanners('category_banner');
   const imageInputRef = useRef(null);
   const [imageUploading, setImageUploading] = useState(false);
 
@@ -309,9 +309,12 @@ export default function ProductForm() {
             </label>
             <select {...register('category')} className={inputClass}>
               <option value="">Select category…</option>
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c} className="capitalize">{c}</option>
-              ))}
+              {categoryBanners.map((b) => {
+                const value = b.title?.toLowerCase().replace(/\s+/g, '-') ?? '';
+                return (
+                  <option key={b.id} value={value}>{b.title}</option>
+                );
+              })}
             </select>
           </div>
         </div>
