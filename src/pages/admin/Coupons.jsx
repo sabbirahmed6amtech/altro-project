@@ -62,7 +62,7 @@ export default function Coupons() {
     };
     const { error } = editId
       ? await supabase.from('coupons').update(payload).eq('id', editId)
-      : await supabase.from('coupons').insert([payload]);
+      : await supabase.from('coupons').insert([{ ...payload, used_count: 0 }]);
 
     if (error) {
       toast.error('Failed to save coupon.');
