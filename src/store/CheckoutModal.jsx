@@ -13,6 +13,7 @@ import bkashLogo from '../assets/bkash.png';
 import nagadLogo from '../assets/nagad.png';
 import rocketLogo from '../assets/rocket.png';
 import bankLogo from '../assets/bank.png';
+import cashLogo from '../assets/cash.png';
 
 // ─── Schemas ────────────────────────────────────────────────────────────────
 
@@ -31,6 +32,24 @@ const paymentSchema = z.object({
   senderNumber: z.string().optional(),
   trxId: z.string().optional(),
   paymentNote: z.string().optional(),
+}).superRefine((data, ctx) => {
+  const mobileBanking = ['bkash', 'nagad', 'rocket'];
+  if (mobileBanking.includes(data.paymentMethod)) {
+    if (!data.senderNumber?.trim()) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Sender number is required', path: ['senderNumber'] });
+    }
+    if (!data.trxId?.trim()) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Transaction ID is required', path: ['trxId'] });
+    }
+  }
+  if (data.paymentMethod === 'bank') {
+    if (!data.senderNumber?.trim()) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Depositor name is required', path: ['senderNumber'] });
+    }
+    if (!data.trxId?.trim()) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Transaction reference is required', path: ['trxId'] });
+    }
+  }
 });
 
 const PAYMENT_LABELS = {
@@ -274,7 +293,7 @@ export default function CheckoutModal({ isOpen, onClose }) {
     { key: 'nagad', label: 'Nagad', enabled: nagadEnabled, number: nagadNumber, logo: nagadLogo },
     { key: 'rocket', label: 'Rocket', enabled: rocketEnabled, number: rocketNumber, logo: rocketLogo },
     { key: 'bank', label: 'Bank Transfer', enabled: bankEnabled, number: null, logo: bankLogo },
-    { key: 'cod', label: 'Cash on Delivery', enabled: codEnabled, number: null, color: 'bg-[#1a5c38]' },
+    { key: 'cod', label: 'Cash on Delivery', enabled: codEnabled, number: null, logo: cashLogo },
   ].filter((m) => m.enabled);
 
   const isMobileBanking = (method) => ['bkash', 'nagad', 'rocket'].includes(method);
@@ -506,24 +525,26 @@ export default function CheckoutModal({ isOpen, onClose }) {
                       </p>
                       <div>
                         <label className="block text-xs font-semibold text-[#0e1a12] mb-1.5">
-                          Your Sender Number
+                          Your Sender Number *
                         </label>
                         <input
                           {...reg2('senderNumber')}
                           type="tel"
                           placeholder="01XXXXXXXXX"
-                          className="w-full border border-[#1a5c38]/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a5c38] bg-[#f5f2eb]"
+                          className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a5c38] bg-[#f5f2eb] ${err2.senderNumber ? 'border-red-400' : 'border-[#1a5c38]/20'}`}
                         />
+                        <FieldError message={err2.senderNumber?.message} />
                       </div>
                       <div>
                         <label className="block text-xs font-semibold text-[#0e1a12] mb-1.5">
-                          Transaction ID (TrxID)
+                          Transaction ID (TrxID) *
                         </label>
                         <input
                           {...reg2('trxId')}
                           placeholder="e.g. AB1234XXXX"
-                          className="w-full border border-[#1a5c38]/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a5c38] bg-[#f5f2eb]"
+                          className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a5c38] bg-[#f5f2eb] ${err2.trxId ? 'border-red-400' : 'border-[#1a5c38]/20'}`}
                         />
+                        <FieldError message={err2.trxId?.message} />
                       </div>
                     </div>
                   )}
@@ -569,23 +590,25 @@ export default function CheckoutModal({ isOpen, onClose }) {
                       </p>
                       <div>
                         <label className="block text-xs font-semibold text-[#0e1a12] mb-1.5">
-                          Depositor Name
+                          Depositor Name *
                         </label>
                         <input
                           {...reg2('senderNumber')}
                           placeholder="Name used for the bank transfer"
-                          className="w-full border border-[#1a5c38]/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a5c38] bg-[#f5f2eb]"
+                          className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a5c38] bg-[#f5f2eb] ${err2.senderNumber ? 'border-red-400' : 'border-[#1a5c38]/20'}`}
                         />
+                        <FieldError message={err2.senderNumber?.message} />
                       </div>
                       <div>
                         <label className="block text-xs font-semibold text-[#0e1a12] mb-1.5">
-                          Transaction / Reference No.
+                          Transaction / Reference No. *
                         </label>
                         <input
                           {...reg2('trxId')}
                           placeholder="e.g. TXN1234567890"
-                          className="w-full border border-[#1a5c38]/20 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a5c38] bg-[#f5f2eb]"
+                          className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a5c38] bg-[#f5f2eb] ${err2.trxId ? 'border-red-400' : 'border-[#1a5c38]/20'}`}
                         />
+                        <FieldError message={err2.trxId?.message} />
                       </div>
                     </div>
                   )}

@@ -29,7 +29,6 @@ export default function ProductDetail() {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [mainImageIdx, setMainImageIdx] = useState(0);
   const [addingToCart, setAddingToCart] = useState(false);
-  const [descOpen, setDescOpen] = useState(true);
   const [zoomOpen, setZoomOpen] = useState(false);
 
   useEffect(() => {
@@ -435,30 +434,6 @@ export default function ProductDetail() {
             </div>
           </div>
 
-          {/* Description Accordion */}
-          {product.description && (
-            <section className="mt-10 bg-white rounded-2xl shadow-sm overflow-hidden">
-              <button
-                onClick={() => setDescOpen((v) => !v)}
-                className="w-full flex items-center justify-between px-6 py-4 text-left"
-              >
-                <span className="font-semibold text-[#0e1a12]">Product Description</span>
-                <svg
-                  className={`w-5 h-5 text-[#1a5c38] transition-transform ${descOpen ? 'rotate-180' : ''}`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              {descOpen && (
-                <div className="px-6 pb-6 text-sm text-[#0e1a12]/70 leading-relaxed whitespace-pre-line">
-                  {product.description}
-                </div>
-              )}
-            </section>
-          )}
 
           {/* Related Products */}
           {related.length > 0 && (

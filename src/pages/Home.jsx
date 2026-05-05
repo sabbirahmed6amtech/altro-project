@@ -10,6 +10,13 @@ import Footer from '../store/Footer';
 import CheckoutModal from '../store/CheckoutModal';
 import { useProducts } from '../hooks/useProducts';
 import { useBanners } from '../hooks/useBanners';
+import { useInView } from '../hooks/useInView';
+
+const anim = (inView, delay = 0) => ({
+  opacity: inView ? 1 : 0,
+  transform: inView ? 'none' : 'translateY(28px)',
+  transition: `opacity 0.6s ease-out ${delay}ms, transform 0.6s ease-out ${delay}ms`,
+});
 
 const USP_ITEMS = [
   {
@@ -102,6 +109,13 @@ export default function Home() {
     const t = setInterval(nextSale, 4500);
     return () => clearInterval(t);
   }, [saleBanners.length, salePaused, nextSale]);
+
+  const [uspRef, uspInView] = useInView(0.15);
+  const [promoRef, promoInView] = useInView(0.1);
+  const [catRef, catInView] = useInView(0.08);
+  const [prodRef, prodInView] = useInView(0.08);
+  const [saleRef, saleInView] = useInView(0.1);
+  const [nlRef, nlInView] = useInView(0.15);
 
   async function handleNewsletterSubmit(e) {
     e.preventDefault();
@@ -203,11 +217,11 @@ export default function Home() {
       </div>
 
       {/* USP Strip */}
-      <section className="bg-white border-b border-[#1a5c38]/8">
+      <section ref={uspRef} className="bg-white border-b border-[#1a5c38]/8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-[#1a5c38]/8">
-            {USP_ITEMS.map((item) => (
-              <div key={item.title} className="flex items-center gap-3 p-5 md:p-6">
+            {USP_ITEMS.map((item, i) => (
+              <div key={item.title} className="flex items-center gap-3 p-5 md:p-6" style={anim(uspInView, i * 100)}>
                 <div className="shrink-0 w-10 h-10 rounded-full bg-[#1a5c38]/8 flex items-center justify-center text-[#1a5c38]">
                   {item.icon}
                 </div>
@@ -223,8 +237,8 @@ export default function Home() {
 
       {/* Promo Banners Carousel */}
       {promobanners.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-4">
-          <div className="flex items-center mb-5">
+        <section ref={promoRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-4">
+          <div className="flex items-center mb-5" style={anim(promoInView)}>
             <h2 className="text-xs font-semibold tracking-[0.18em] uppercase text-[#1a5c38] shrink-0">
               Featured
             </h2>
@@ -240,6 +254,7 @@ export default function Home() {
             className="relative rounded-2xl overflow-hidden"
             onMouseEnter={() => setPromoPaused(true)}
             onMouseLeave={() => setPromoPaused(false)}
+            style={anim(promoInView, 120)}
           >
             {/* Slide track */}
             <div
@@ -308,9 +323,9 @@ export default function Home() {
 
       {/* Category Section */}
       {categoryBanners.length > 0 && (
-        <section className="pt-12 pb-4" id="categories">
+        <section ref={catRef} className="pt-12 pb-4" id="categories">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center gap-4 mb-6">
+            <div className="flex items-center gap-4 mb-6" style={anim(catInView)}>
               <h2 className="text-xs font-semibold tracking-[0.18em] uppercase text-[#1a5c38] shrink-0">
                 Shop by Category
               </h2>
@@ -325,8 +340,8 @@ export default function Home() {
                   <Link
                     key={cat.id != null ? cat.id : idx}
                     to={`/category/${slug}`}
-                    className="group relative flex-shrink-0 w-36 md:w-auto snap-start rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-                    style={{ aspectRatio: '3/4' }}
+                    className="group relative flex-shrink-0 w-36 md:w-auto snap-start rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300 hover:-translate-y-1"
+                    style={{ aspectRatio: '3/4', ...anim(catInView, 100 + idx * 80) }}
                   >
                     {cat.image_url ? (
                       <img
@@ -358,9 +373,9 @@ export default function Home() {
       )}
 
       {/* Products Section */}
-      <section id="products" className="py-10">
+      <section ref={prodRef} id="products" className="py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-4 mb-7">
+          <div className="flex items-center gap-4 mb-7" style={anim(prodInView)}>
             <div>
               <p className="text-[10px] font-semibold tracking-[0.2em] uppercase text-[#1a5c38] mb-1">
                 Fresh in
@@ -370,7 +385,7 @@ export default function Home() {
             <span className="h-px flex-1 bg-[#1a5c38]/10 mt-4" />
           </div>
 
-          <div className="flex gap-2 flex-wrap mb-7">
+          <div className="flex gap-2 flex-wrap mb-7" style={anim(prodInView, 120)}>
             {['All', ...categoryBanners.map((b) => b.title)].map((cat) => (
               <button
                 key={cat}
@@ -387,7 +402,7 @@ export default function Home() {
             ))}
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4" style={anim(prodInView, 200)}>
             {loading && products.length === 0
               ? Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)
               : products.map((product) => (
@@ -434,7 +449,7 @@ export default function Home() {
       </section>
 
       {/* Sale Banner Carousel */}
-      <section className="py-8 px-4">
+      <section ref={saleRef} className="py-8 px-4" style={anim(saleInView)}>
         <div className="max-w-7xl mx-auto">
           {saleBanners.length > 0 ? (
             <div
@@ -529,15 +544,15 @@ export default function Home() {
       </section>
 
       {/* Newsletter */}
-      <section className="py-16 bg-[#0e1a12]">
+      <section ref={nlRef} className="py-16 bg-[#0e1a12]">
         <div className="max-w-lg mx-auto px-4 text-center">
-          <p className="text-[#c9f230] text-[10px] font-bold tracking-[0.25em] uppercase mb-3">Stay Connected</p>
-          <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">Stay in the Loop</h2>
-          <p className="text-white/40 text-sm mb-8">
+          <p className="text-[#c9f230] text-[10px] font-bold tracking-[0.25em] uppercase mb-3" style={anim(nlInView)}>Stay Connected</p>
+          <h2 className="text-2xl md:text-3xl font-bold text-white mb-2" style={anim(nlInView, 100)}>Stay in the Loop</h2>
+          <p className="text-white/40 text-sm mb-8" style={anim(nlInView, 180)}>
             Get the latest arrivals, exclusive offers and style tips — straight to your inbox.
           </p>
           {newsletterDone ? (
-            <div className="inline-flex items-center gap-2 bg-[#c9f230]/10 text-[#c9f230] font-semibold text-sm px-5 py-3 rounded-full border border-[#c9f230]/20">
+            <div className="inline-flex items-center gap-2 bg-[#c9f230]/10 text-[#c9f230] font-semibold text-sm px-5 py-3 rounded-full border border-[#c9f230]/20" style={anim(nlInView, 260)}>
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
@@ -545,7 +560,7 @@ export default function Home() {
             </div>
           ) : (
             <>
-              <form onSubmit={handleNewsletterSubmit} className="flex gap-2 max-w-sm mx-auto">
+              <form onSubmit={handleNewsletterSubmit} className="flex gap-2 max-w-sm mx-auto" style={anim(nlInView, 260)}>
                 <input
                   type="email"
                   required
