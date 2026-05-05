@@ -18,8 +18,8 @@ const USP_ITEMS = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
       </svg>
     ),
-    title: 'Free Delivery',
-    desc: 'On orders over ৳999',
+    title: 'Safe & Secure Shipping',
+    desc: 'We work with reliable courier services for careful delivery',
   },
   {
     icon: (
@@ -27,8 +27,8 @@ const USP_ITEMS = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
       </svg>
     ),
-    title: 'Easy Returns',
-    desc: '7-day hassle free returns',
+    title: 'Easy Returns Policy',
+    desc: 'We assist you with returns in case of damaged or incorrect items',
   },
   {
     icon: (
