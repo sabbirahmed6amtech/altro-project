@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '../lib/supabase';
@@ -83,7 +83,27 @@ export default function Home() {
     pageSize: 8,
   });
 
-  const saleBanner = saleBanners?.[0] ?? null;
+  const [promoIndex, setPromoIndex] = useState(0);
+  const [saleIndex, setSaleIndex] = useState(0);
+  const [promoPaused, setPromoPaused] = useState(false);
+  const [salePaused, setSalePaused] = useState(false);
+
+  const nextPromo = useCallback(() => setPromoIndex(i => (i + 1) % Math.max(promobanners.length, 1)), [promobanners.length]);
+  const prevPromo = useCallback(() => setPromoIndex(i => (i - 1 + promobanners.length) % Math.max(promobanners.length, 1)), [promobanners.length]);
+  const nextSale = useCallback(() => setSaleIndex(i => (i + 1) % Math.max(saleBanners.length, 1)), [saleBanners.length]);
+  const prevSale = useCallback(() => setSaleIndex(i => (i - 1 + saleBanners.length) % Math.max(saleBanners.length, 1)), [saleBanners.length]);
+
+  useEffect(() => {
+    if (promobanners.length <= 1 || promoPaused) return;
+    const t = setInterval(nextPromo, 3500);
+    return () => clearInterval(t);
+  }, [promobanners.length, promoPaused, nextPromo]);
+
+  useEffect(() => {
+    if (saleBanners.length <= 1 || salePaused) return;
+    const t = setInterval(nextSale, 4500);
+    return () => clearInterval(t);
+  }, [saleBanners.length, salePaused, nextSale]);
 
   async function handleNewsletterSubmit(e) {
     e.preventDefault();
@@ -203,48 +223,111 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Promo Banners */}
+      {/* Promo Banners Carousel */}
       {promobanners.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-4">
-          <div className="flex items-end justify-between mb-5">
-            <h2 className="text-xs font-semibold tracking-[0.18em] uppercase text-[#1a5c38]">
+          <div className="flex items-center mb-5">
+            <h2 className="text-xs font-semibold tracking-[0.18em] uppercase text-[#1a5c38] shrink-0">
               Featured
             </h2>
             <span className="h-px flex-1 mx-4 bg-[#1a5c38]/10" />
+            {promobanners.length > 1 && (
+              <span className="text-[10px] text-[#1a5c38]/50 font-medium shrink-0">
+                {promoIndex + 1} / {promobanners.length}
+              </span>
+            )}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {promobanners.slice(0, 3).map((banner, idx) => (
-              <a
-                key={banner.id != null ? banner.id : idx}
-                href={banner.cta_url != null ? banner.cta_url : '#'}
-                className="relative block rounded-xl overflow-hidden group"
-                style={{ aspectRatio: '3/1' }}
-              >
-                {banner.image_url ? (
-                  <img
-                    src={banner.image_url}
-                    alt={banner.title != null ? banner.title : ''}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+
+          <div
+            className="relative rounded-2xl overflow-hidden"
+            onMouseEnter={() => setPromoPaused(true)}
+            onMouseLeave={() => setPromoPaused(false)}
+          >
+            {/* Slide track */}
+            <div
+              className="flex transition-transform duration-500 ease-in-out"
+              style={{ transform: `translateX(-${promoIndex * 100}%)` }}
+            >
+              {promobanners.map((banner, idx) => (
+                <a
+                  key={banner.id != null ? banner.id : idx}
+                  href={banner.cta_url != null ? banner.cta_url : '#'}
+                  className="relative flex-shrink-0 w-full block group"
+                  style={{ aspectRatio: '21/8' }}
+                >
+                  {banner.image_url ? (
+                    <img
+                      src={banner.image_url}
+                      alt={banner.title != null ? banner.title : ''}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-[#1a5c38]" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent" />
+                  <div className="absolute inset-0 flex flex-col justify-center p-6 sm:p-10">
+                    {banner.title && (
+                      <h3 className="text-white font-bold text-lg sm:text-2xl md:text-3xl leading-tight mb-3 max-w-xs sm:max-w-md">
+                        {banner.title}
+                      </h3>
+                    )}
+                    {banner.subtitle && (
+                      <p className="text-white/70 text-xs sm:text-sm mb-3 max-w-xs">{banner.subtitle}</p>
+                    )}
+                    {banner.cta_text && (
+                      <span className="inline-flex items-center gap-1.5 bg-[#c9f230] text-[#0e1a12] text-xs font-bold px-4 py-2 rounded-full w-fit">
+                        {banner.cta_text}
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </span>
+                    )}
+                  </div>
+                </a>
+              ))}
+            </div>
+
+            {/* Prev / Next arrows */}
+            {promobanners.length > 1 && (
+              <>
+                <button
+                  onClick={prevPromo}
+                  aria-label="Previous"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/30 hover:bg-black/55 backdrop-blur-sm flex items-center justify-center text-white transition-all duration-200"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button
+                  onClick={nextPromo}
+                  aria-label="Next"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/30 hover:bg-black/55 backdrop-blur-sm flex items-center justify-center text-white transition-all duration-200"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </>
+            )}
+
+            {/* Dot indicators */}
+            {promobanners.length > 1 && (
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                {promobanners.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setPromoIndex(i)}
+                    aria-label={`Go to slide ${i + 1}`}
+                    className={`rounded-full transition-all duration-300 ${
+                      i === promoIndex
+                        ? 'w-5 h-1.5 bg-[#c9f230]'
+                        : 'w-1.5 h-1.5 bg-white/50 hover:bg-white/80'
+                    }`}
                   />
-                ) : (
-                  <div className="w-full h-full bg-[#1a5c38]" />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/25 to-transparent" />
-                <div className="absolute inset-0 flex flex-col justify-center p-5">
-                  {banner.title && (
-                    <h3 className="text-white font-bold text-base leading-tight mb-2">{banner.title}</h3>
-                  )}
-                  {banner.cta_text && (
-                    <span className="inline-flex items-center gap-1.5 bg-[#c9f230] text-[#0e1a12] text-xs font-bold px-3.5 py-1.5 rounded-full w-fit">
-                      {banner.cta_text}
-                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                      </svg>
-                    </span>
-                  )}
-                </div>
-              </a>
-            ))}
+                ))}
+              </div>
+            )}
           </div>
         </section>
       )}
@@ -376,36 +459,100 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Sale Banner */}
+      {/* Sale Banner Carousel */}
       <section className="py-8 px-4">
         <div className="max-w-7xl mx-auto">
-          {saleBanner ? (
-            <a
-              href={saleBanner.cta_url != null ? saleBanner.cta_url : '#'}
-              className="relative block rounded-2xl overflow-hidden group"
-              style={{ aspectRatio: '3/1' }}
+          {saleBanners.length > 0 ? (
+            <div
+              className="relative rounded-2xl overflow-hidden"
+              onMouseEnter={() => setSalePaused(true)}
+              onMouseLeave={() => setSalePaused(false)}
             >
-              <img
-                src={saleBanner.image_url}
-                alt={saleBanner.title != null ? saleBanner.title : 'Sale'}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-[#0e1a12]/85 via-[#1a5c38]/60 to-transparent" />
-              <div className="absolute inset-0 flex flex-col justify-center p-8 md:p-14">
-                <p className="text-[#c9f230] text-xs font-bold tracking-[0.2em] uppercase mb-2">Limited Time</p>
-                <h3 className="text-white text-3xl md:text-5xl font-bold mb-4 leading-tight">
-                  {saleBanner.title != null ? saleBanner.title : 'End of Season Sale'}
-                </h3>
-                {saleBanner.cta_text && (
-                  <span className="inline-flex items-center gap-2 bg-[#c9f230] text-[#0e1a12] font-bold px-6 py-2.5 rounded-full text-sm w-fit">
-                    {saleBanner.cta_text}
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              {/* Slide track */}
+              <div
+                className="flex transition-transform duration-500 ease-in-out"
+                style={{ transform: `translateX(-${saleIndex * 100}%)` }}
+              >
+                {saleBanners.map((banner, idx) => (
+                  <a
+                    key={banner.id != null ? banner.id : idx}
+                    href={banner.cta_url != null ? banner.cta_url : '#'}
+                    className="relative flex-shrink-0 w-full block"
+                    style={{ aspectRatio: '3/1' }}
+                  >
+                    {banner.image_url ? (
+                      <img
+                        src={banner.image_url}
+                        alt={banner.title != null ? banner.title : 'Sale'}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-[#1a5c38]" />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#0e1a12]/85 via-[#1a5c38]/60 to-transparent" />
+                    <div className="absolute inset-0 flex flex-col justify-center p-6 sm:p-10 md:p-14">
+                      <p className="text-[#c9f230] text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase mb-2">Limited Time</p>
+                      <h3 className="text-white text-2xl sm:text-3xl md:text-5xl font-bold mb-3 md:mb-4 leading-tight max-w-xs sm:max-w-sm md:max-w-lg">
+                        {banner.title != null ? banner.title : 'End of Season Sale'}
+                      </h3>
+                      {banner.subtitle && (
+                        <p className="text-white/60 text-xs sm:text-sm mb-3">{banner.subtitle}</p>
+                      )}
+                      {banner.cta_text && (
+                        <span className="inline-flex items-center gap-2 bg-[#c9f230] text-[#0e1a12] font-bold px-5 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm w-fit">
+                          {banner.cta_text}
+                          <svg className="w-3 sm:w-3.5 h-3 sm:h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                          </svg>
+                        </span>
+                      )}
+                    </div>
+                  </a>
+                ))}
+              </div>
+
+              {/* Prev / Next arrows */}
+              {saleBanners.length > 1 && (
+                <>
+                  <button
+                    onClick={prevSale}
+                    aria-label="Previous"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/30 hover:bg-black/55 backdrop-blur-sm flex items-center justify-center text-white transition-all duration-200"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={nextSale}
+                    aria-label="Next"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/30 hover:bg-black/55 backdrop-blur-sm flex items-center justify-center text-white transition-all duration-200"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                     </svg>
-                  </span>
-                )}
-              </div>
-            </a>
+                  </button>
+                </>
+              )}
+
+              {/* Dot indicators */}
+              {saleBanners.length > 1 && (
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                  {saleBanners.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setSaleIndex(i)}
+                      aria-label={`Go to slide ${i + 1}`}
+                      className={`rounded-full transition-all duration-300 ${
+                        i === saleIndex
+                          ? 'w-5 h-1.5 bg-[#c9f230]'
+                          : 'w-1.5 h-1.5 bg-white/50 hover:bg-white/80'
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           ) : (
             <div className="relative bg-[#1a5c38] rounded-2xl overflow-hidden flex flex-col md:flex-row items-center justify-between p-8 md:px-14 md:py-12 gap-6">
               <div className="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-white/5 pointer-events-none" />
