@@ -208,51 +208,74 @@ export default function Banners() {
             </button>
           </div>
         ) : (
-          <div className="divide-y divide-gray-100">
-            {banners.map((banner) => (
-              <div key={banner.id} className="flex items-center gap-4 px-6 py-4">
-                {banner.image_url ? (
-                  <img
-                    src={banner.image_url}
-                    alt={banner.title ?? ''}
-                    className="w-20 h-12 rounded-lg object-cover bg-gray-100 shrink-0"
-                  />
-                ) : (
-                  <div className="w-20 h-12 rounded-lg bg-[#1a5c38]/10 shrink-0" />
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-[#0e1a12] truncate">
-                    {banner.title || <span className="text-[#0e1a12]/40 italic">No title</span>}
-                  </p>
-                  <p className="text-xs text-[#0e1a12]/50 mt-0.5">
-                    {typeLabel(banner.type)} · Sort: {banner.sort_order ?? 0}
-                  </p>
-                </div>
-                <Badge variant={banner.is_active ? 'success' : 'error'}>
-                  {banner.is_active ? 'Active' : 'Inactive'}
-                </Badge>
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    onClick={() => handleToggleActive(banner)}
-                    className="text-xs px-2.5 py-1 rounded-lg border border-[#0e1a12]/20 text-[#0e1a12]/60 hover:bg-gray-100 transition-colors"
-                  >
-                    {banner.is_active ? 'Deactivate' : 'Activate'}
-                  </button>
-                  <button
-                    onClick={() => openEdit(banner)}
-                    className="text-xs px-2.5 py-1 rounded-lg border border-[#1a5c38]/30 text-[#1a5c38] hover:bg-[#1a5c38]/5 transition-colors"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => setDeleteTarget(banner)}
-                    className="text-xs px-2.5 py-1 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gray-50 text-left text-xs font-semibold text-[#0e1a12]/50 uppercase tracking-wide">
+                  <th className="px-6 py-3">Image</th>
+                  <th className="px-6 py-3">Title</th>
+                  <th className="px-6 py-3">Type</th>
+                  <th className="px-6 py-3">Sort</th>
+                  <th className="px-6 py-3">Status</th>
+                  <th className="px-6 py-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {banners.map((banner) => (
+                  <tr key={banner.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4">
+                      {banner.image_url ? (
+                        <img
+                          src={banner.image_url}
+                          alt={banner.title ?? ''}
+                          className="w-20 h-12 rounded-lg object-cover bg-gray-100"
+                        />
+                      ) : (
+                        <div className="w-20 h-12 rounded-lg bg-[#1a5c38]/10" />
+                      )}
+                    </td>
+                    <td className="px-6 py-4 font-semibold text-[#0e1a12] max-w-[180px]">
+                      <span className="truncate block">
+                        {banner.title || <span className="text-[#0e1a12]/40 italic font-normal">No title</span>}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-[#0e1a12]/60 whitespace-nowrap">
+                      {typeLabel(banner.type)}
+                    </td>
+                    <td className="px-6 py-4 text-[#0e1a12]/60">
+                      {banner.sort_order ?? 0}
+                    </td>
+                    <td className="px-6 py-4">
+                      <Badge variant={banner.is_active ? 'success' : 'error'}>
+                        {banner.is_active ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleToggleActive(banner)}
+                          className="text-xs px-2.5 py-1 rounded-lg border border-[#0e1a12]/20 text-[#0e1a12]/60 hover:bg-gray-100 transition-colors whitespace-nowrap"
+                        >
+                          {banner.is_active ? 'Deactivate' : 'Activate'}
+                        </button>
+                        <button
+                          onClick={() => openEdit(banner)}
+                          className="text-xs px-2.5 py-1 rounded-lg border border-[#1a5c38]/30 text-[#1a5c38] hover:bg-[#1a5c38]/5 transition-colors"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => setDeleteTarget(banner)}
+                          className="text-xs px-2.5 py-1 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

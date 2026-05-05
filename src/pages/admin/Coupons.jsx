@@ -65,7 +65,8 @@ export default function Coupons() {
       : await supabase.from('coupons').insert([{ ...payload, used_count: 0 }]);
 
     if (error) {
-      toast.error('Failed to save coupon.');
+      console.error('Coupon save error:', error);
+      toast.error(error.message ?? 'Failed to save coupon.');
     } else {
       toast.success(editId ? 'Coupon updated.' : 'Coupon created.');
       setModalOpen(false);
