@@ -89,9 +89,7 @@ export default function Home() {
   const [salePaused, setSalePaused] = useState(false);
 
   const nextPromo = useCallback(() => setPromoIndex(i => (i + 1) % Math.max(promobanners.length, 1)), [promobanners.length]);
-  const prevPromo = useCallback(() => setPromoIndex(i => (i - 1 + promobanners.length) % Math.max(promobanners.length, 1)), [promobanners.length]);
   const nextSale = useCallback(() => setSaleIndex(i => (i + 1) % Math.max(saleBanners.length, 1)), [saleBanners.length]);
-  const prevSale = useCallback(() => setSaleIndex(i => (i - 1 + saleBanners.length) % Math.max(saleBanners.length, 1)), [saleBanners.length]);
 
   useEffect(() => {
     if (promobanners.length <= 1 || promoPaused) return;
@@ -286,30 +284,6 @@ export default function Home() {
                 </a>
               ))}
             </div>
-
-            {/* Prev / Next arrows */}
-            {promobanners.length > 1 && (
-              <>
-                <button
-                  onClick={prevPromo}
-                  aria-label="Previous"
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/30 hover:bg-black/55 backdrop-blur-sm flex items-center justify-center text-white transition-all duration-200"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                <button
-                  onClick={nextPromo}
-                  aria-label="Next"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/30 hover:bg-black/55 backdrop-blur-sm flex items-center justify-center text-white transition-all duration-200"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </>
-            )}
 
             {/* Dot indicators */}
             {promobanners.length > 1 && (
@@ -510,30 +484,6 @@ export default function Home() {
                   </a>
                 ))}
               </div>
-
-              {/* Prev / Next arrows */}
-              {saleBanners.length > 1 && (
-                <>
-                  <button
-                    onClick={prevSale}
-                    aria-label="Previous"
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/30 hover:bg-black/55 backdrop-blur-sm flex items-center justify-center text-white transition-all duration-200"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={nextSale}
-                    aria-label="Next"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/30 hover:bg-black/55 backdrop-blur-sm flex items-center justify-center text-white transition-all duration-200"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                </>
-              )}
 
               {/* Dot indicators */}
               {saleBanners.length > 1 && (
